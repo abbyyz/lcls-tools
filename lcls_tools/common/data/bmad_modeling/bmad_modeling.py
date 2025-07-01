@@ -8,6 +8,61 @@ from lcls_live.archiver import lcls_archiver_restore
 
 YAML_LOCATION = os.path.join(os.path.dirname(__file__), "yaml/")
 
+"""def update_bpm_orbit_variables(tao, bm, reference_orbit):
+    # Get current orbit data from BPMs
+    bpm_data = get_bpms_pvlist(tao, bm.all_data_maps)  # Assuming you have a function that fetches BPM PV values
+    current_orbit = get_live(bpm_data)  # Fetch current BPM values from PVs
+    
+    # Assume 'reference_orbit' is a dictionary containing the reference values
+    # The keys in 'reference_orbit' should match the BPM names/aliases in 'current_orbit'
+    
+    for bpm_name, current_value in current_orbit.items():
+        if bpm_name in reference_orbit:
+            ref_value = reference_orbit[bpm_name]
+            
+            # Calculate or update orbit data variable in tao
+            # For example, let's update the orbit data variable:
+            orbit_variable = tao.data_variable(f"{bpm_name}_orbit")  # Access existing orbit variable
+            
+            # You might want to set the orbit variable to the current BPM value
+            if orbit_variable is not None:
+                tao.cmd(f"set var {orbit_variable} = {current_value}")  # Update using current BPM value
+            
+            # If you want to calculate deviation from the reference
+            deviation = current_value - ref_value
+            
+            # Update a variable to store the deviation if needed
+            deviation_variable = tao.data_variable(f"{bpm_name}_deviation")
+            if deviation_variable is not None:
+                tao.cmd(f"set var {deviation_variable} = {deviation}")  # Update deviation variable
+            
+    print("BPM orbit data variables updated successfully.")
+
+# Example usage
+reference_orbit = {
+    'BPM1': 0.0,
+    'BPM2': 0.0,
+    # Add entries for all BPMs you are monitoring
+}
+
+update_bpm_orbit_variables(tao, bm, reference_orbit)"""
+
+def get_bpms_pvlist(tao, all_data_maps):
+    pvlist = set()
+    for dm_key, map in all_data_maps.items():
+        if dm_key.startswith("BPMS"):
+            elements = map.data["bmad_name"].to_list()
+            pvs=map.pvlist
+            full_model_elements = tao.lat_list("*", "ele.name")
+            for ele in elements:
+                if ele in full_model_elements:
+                    for pv in pvs:
+                        if self.data_source == 'ACT':
+                            pvlist.add(pv['pvname_rbv'])
+                        elif self.data_source == 'DES' or self.data_source == 'ARCHIVE':
+                            pvlist.add(pv['pvname'])
+    return list(pvlist)
+
 
 def get_rf_quads_pvlist(tao, all_data_maps, beam_code=1):
     """Returns pvlist from lcls_live datamaps for given beam_path
@@ -143,16 +198,30 @@ def get_machine_values(data_source, pv_list, date_time=""):
     data_sources = ["DES", "ACT", "ARCHIVE"]
     if data_source not in data_sources:
         print(f"data_source should be one of {data_sources}")
+
+    pvdata = {}
+    
     if data_source in ["DES", "ACT"]:
-        pvdata = get_live(pv_list)
+        pvdata.update(get_live(pv_list))
     elif "ARCHIVE" in data_source:
-        pvdata = lcls_archiver_restore(pv_list, date_time)
-    if "DES" in data_source:
-        for pv, val in pvdata.items():
-            if any(k in pv for k in ["HDSC", "SWRD", "STAT"]):
-                pvdata[pv] = 0
-            if "DSTA" in pv:
-                pvdata[pv] = np.array([0, 0])
+        pvdata.update(lcls_archiver_restore(pv_list, date_time))
+
+    #bpms
+    bpms_pvlist = get_bpms_pvlist(tao, self.all_data_maps)
+    if data_source in ["DES", "ACT"]:
+        bpm_data = get_live(bpms_pvlist)
+    elif "ARCHIVE" in data_source:
+        bpm_data = lcls_archiver_restore(bpms_pvlist, date_time)
+    pvdata.update(bpm_data)
+
+    #if "DES" in data_source:
+    for pv, val in pvdata.items():
+        if any(k in pv for k in ["HDSC", "SWRD", "STAT"]):
+            pvdata[pv] = 0
+        if "DSTA" in pv:
+            pvdata[pv] = np.array([0, 0])   
+    #expand to get BPMS
+
     return pvdata
 
 
