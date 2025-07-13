@@ -195,7 +195,7 @@ def get_tao(pvdata, mdl_obj):
     return lines_rf + lines_quads
 
 
-def get_machine_values(data_source, pv_list, date_time="", tao=None):
+def get_machine_values(data_source, pv_list, all_data_maps, date_time="", tao=None):
     """Returns pvdata, a dictionary with keys containing the PV name and values from Actual, Desired or Archive"""
     data_sources = ["DES", "ACT", "ARCHIVE"]
     if data_source not in data_sources:
@@ -209,7 +209,7 @@ def get_machine_values(data_source, pv_list, date_time="", tao=None):
         pvdata.update(lcls_archiver_restore(pv_list, date_time))
 
     #bpms
-    bpms_pvlist = get_bpms_pvlist(tao, self.all_data_maps)
+    bpms_pvlist = get_bpms_pvlist(tao, all_data_maps)
     if data_source in ["DES", "ACT"]:
         bpm_data = get_live(bpms_pvlist)
     elif "ARCHIVE" in data_source:
