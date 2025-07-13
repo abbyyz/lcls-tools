@@ -123,6 +123,21 @@ def get_twiss(tao, element, which="design"):
     result = tao.ele_twiss(element, which=which)
     return [result[p] for p in ["beta_a", "alpha_a", "beta_b", "alpha_b"]]
 
+def bmag(twiss, twiss_reference):
+    """Calculates BMAG from imput twiss and reference twiss"""
+    beta_a, alpha_a, beta_b, alpha_b = twiss
+    beta_a_ref, alpha_a_ref, beta_b_ref, alpha_b_ref = twiss_reference
+    bmag_a = bmag_func(beta_a, alpha_a, beta_a_ref, alpha_a_ref)
+    bmag_b = bmag_func(beta_b, alpha_b, beta_b_ref, alpha_b_ref)
+    return (bmag_a, bmag_b)
+
+
+def bmag_func(bb, ab, bl, al):
+    """Calculates the BMAG miss match parameter.  bb and ab are the modeled
+    beta and alpha functions at a given element and bl and al are the
+    reference (most of the time desing) values"""
+    return 1 / 2 * (bl / bb + bb / bl + bb * bl * (ab / bb - al / bl) ** 2)
+
 
 def clean_up_none_values(x, val_type="Ampl", ampl_reject=0.5, none_value=0):
     """Convert None to 0.0 for values in x, if is_phase convert to radians

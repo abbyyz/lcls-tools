@@ -6,21 +6,6 @@ from lcls_tools.common.devices.magnet import Magnet
 from lcls_tools.common.measurements.measurement import Measurement
 
 
-def bmag(twiss, twiss_reference):
-    """Calculates BMAG from imput twiss and reference twiss"""
-    beta_a, alpha_a, beta_b, alpha_b = twiss
-    beta_a_ref, alpha_a_ref, beta_b_ref, alpha_b_ref = twiss_reference
-    bmag_a = bmag_func(beta_a, alpha_a, beta_a_ref, alpha_a_ref)
-    bmag_b = bmag_func(beta_b, alpha_b, beta_b_ref, alpha_b_ref)
-    return (bmag_a, bmag_b)
-
-
-def bmag_func(bb, ab, bl, al):
-    """Calculates the BMAG miss match parameter.  bb and ab are the modeled
-    beta and alpha functions at a given element and bl and al are the
-    reference (most of the time desing) values"""
-    return 1 / 2 * (bl / bb + bb / bl + bb * bl * (ab / bb - al / bl) ** 2)
-
 
 def kmod_to_bdes(e_tot=None, effective_length=None, k=None, element=None, tao=None):
     """Returns BDES in kG given K
