@@ -50,7 +50,6 @@ update_bpm_orbit_variables(tao, bm, reference_orbit)"""
 def get_bpms_pvlist(tao, all_data_maps):
     pvlist = set()
     for dm_key, map in all_data_maps.items():
-        print("dm_key", dm_key, "data_source", map.data_source)
         if dm_key.startswith("BPMS"):
             elements = map.data["bmad_name"].to_list()
             pvs=map.pvlist
