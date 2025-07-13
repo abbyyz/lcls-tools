@@ -27,12 +27,14 @@ output_design = mod.get_output(tao)
 # Get a list of RF and QUADs PVs from lcls-live
 rf_quads_pv_list = mod.get_rf_quads_pvlist(tao, bm.all_data_maps)
 
+bpms_pv_list = mod.get_bpms_pvlist(tao, bm.all_data_maps)
+
 # The desired energy gain comes from LEM EDES pvs as stored in
 # ./lcls_tools/common/data/bmad_modeling/yaml/energy_measurements.yml
 energy_gain_pv_list = mod.get_energy_gain_pvlist(bm.beam_path)
 
 # pvdata from Archive, DES or ACT
-pvdata = mod.get_machine_values(bm.data_source, rf_quads_pv_list + energy_gain_pv_list)
+pvdata = mod.get_machine_values(bm.data_source, rf_quads_pv_list + energy_gain_pv_list, tao=tao)
 
 # Use lcls-live datamaps to get tao_cmds, a list of commands to update the Bmad model
 tao_cmds = mod.get_tao(pvdata, bm)
