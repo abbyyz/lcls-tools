@@ -50,6 +50,7 @@ update_bpm_orbit_variables(tao, bm, reference_orbit)"""
 def get_bpms_pvlist(tao, all_data_maps):
     pvlist = set()
     for dm_key, map in all_data_maps.items():
+        print("dm_key", dm_key, "data_source", map.data_source)
         if dm_key.startswith("BPMS"):
             elements = map.data["bmad_name"].to_list()
             pvs=map.pvlist
@@ -57,6 +58,7 @@ def get_bpms_pvlist(tao, all_data_maps):
             for ele in elements:
                 if ele in full_model_elements:
                     for pv in pvs:
+                        print(self.data_source)
                         if self.data_source == 'ACT':
                             pvlist.add(pv['pvname_rbv'])
                         elif self.data_source == 'DES' or self.data_source == 'ARCHIVE':
@@ -193,7 +195,7 @@ def get_tao(pvdata, mdl_obj):
     return lines_rf + lines_quads
 
 
-def get_machine_values(data_source, pv_list, date_time=""):
+def get_machine_values(data_source, pv_list, date_time="", tao=None):
     """Returns pvdata, a dictionary with keys containing the PV name and values from Actual, Desired or Archive"""
     data_sources = ["DES", "ACT", "ARCHIVE"]
     if data_source not in data_sources:
