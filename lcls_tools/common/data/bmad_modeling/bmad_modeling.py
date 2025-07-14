@@ -47,27 +47,24 @@ reference_orbit = {
 
 update_bpm_orbit_variables(tao, bm, reference_orbit)"""
 
-def get_bpms_pvlist(tao, all_data_maps, data_source="ACT"):
+def get_bpms_pvlist(tao, all_data_maps):
+    print("running bpms")
     pvlist = set()
     for dm_key, map in all_data_maps.items():
+        print(dm_key)
         if dm_key.startswith("BPMS"):
             elements = map.data["bmad_name"].to_list()
-            pvs = map.pvlist
+            print(elements)
+            pvs=map.pvlist
             full_model_elements = tao.lat_list("*", "ele.name")
-            # Ensure pvs and elements are aligned
-            for idx, ele in enumerate(elements):
-                if ele in full_model_elements and idx < len(pvs):
-                    pv = pvs[idx]
-                    if data_source == 'ACT':
-                        if isinstance(pv, dict) and 'pvname_rbv' in pv:
+            for ele in elements:
+                if ele in full_model_elements:
+                    for pv in pvs:
+                        print(self.data_source)
+                        if self.data_source == 'ACT':
                             pvlist.add(pv['pvname_rbv'])
-                        elif isinstance(pv, str):
-                            pvlist.add(pv)
-                    elif data_source in ['DES', 'ARCHIVE']:
-                        if isinstance(pv, dict) and 'pvname' in pv:
+                        elif self.data_source == 'DES' or self.data_source == 'ARCHIVE':
                             pvlist.add(pv['pvname'])
-                        elif isinstance(pv, str):
-                            pvlist.add(pv)
     return list(pvlist)
 
 
