@@ -67,7 +67,6 @@ def get_bpms_pvlist(tao, all_data_maps, data_source):
                             pvlist.add(pv['pvname'])
     return list(pvlist)
 
-
 def get_rf_quads_pvlist(tao, all_data_maps, beam_code=1):
     """Returns pvlist from lcls_live datamaps for given beam_path
     for Cu beampaths beam_code can be 1 or 2"""
