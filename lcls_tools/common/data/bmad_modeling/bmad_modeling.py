@@ -62,11 +62,7 @@ def get_bpms_pvlist(tao, all_data_maps, data_source):
             for ele in elements:
                 if ele in full_model_elements:
                     for pv in pvs:
-                        print(data_source)
-                        if data_source == 'ACT':
-                            pvlist.add(pv['pvname_rbv'])
-                        elif data_source == 'DES' or data_source == 'ARCHIVE':
-                            pvlist.add(pv['pvname'])
+                        pvlist.add(pv)
     return list(pvlist)
 
 def get_rf_quads_pvlist(tao, all_data_maps, beam_code=1):
