@@ -47,7 +47,7 @@ reference_orbit = {
 
 update_bpm_orbit_variables(tao, bm, reference_orbit)"""
 
-def get_bpms_pvlist(tao, all_data_maps):
+def get_bpms_pvlist(tao, all_data_maps, data_source):
     print("running bpms")
     pvlist = set()
     for dm_key, map in all_data_maps.items():
@@ -60,10 +60,10 @@ def get_bpms_pvlist(tao, all_data_maps):
             for ele in elements:
                 if ele in full_model_elements:
                     for pv in pvs:
-                        print(self.data_source)
-                        if self.data_source == 'ACT':
+                        print(data_source)
+                        if data_source == 'ACT':
                             pvlist.add(pv['pvname_rbv'])
-                        elif self.data_source == 'DES' or self.data_source == 'ARCHIVE':
+                        elif data_source == 'DES' or data_source == 'ARCHIVE':
                             pvlist.add(pv['pvname'])
     return list(pvlist)
 
