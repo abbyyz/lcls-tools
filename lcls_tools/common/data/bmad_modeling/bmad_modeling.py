@@ -51,10 +51,10 @@ def get_bpms_pvlist(tao, all_data_maps, data_source):
     print("running bpms")
     pvlist = set()
     for dm_key, map in all_data_maps.items():
-        print(dm_key)
-        if dm_key.startswith("BPMS"):
+        print("dm_key is ", dm_key)
+        if dm_key.startswith("bpms"):
             elements = map.data["bmad_name"].to_list()
-            print(elements)
+            print("starts with bpms, elements = ", elements)
             pvs=map.pvlist
             full_model_elements = tao.lat_list("*", "ele.name")
             for ele in elements:
