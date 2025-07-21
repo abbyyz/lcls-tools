@@ -34,7 +34,7 @@ bpms_pv_list = mod.get_bpms_pvlist(tao, bm.all_data_maps)
 energy_gain_pv_list = mod.get_energy_gain_pvlist(bm.beam_path)
 
 # pvdata from Archive, DES or ACT
-pvdata = mod.get_machine_values(bm.data_source, rf_quads_pv_list + energy_gain_pv_list, bm.all_data_maps, tao=tao)
+pvdata = mod.get_machine_values(tao, bm.all_data_maps, bm.data_source, rf_quads_pv_list + energy_gain_pv_list, bm.date_time)
 
 # Use lcls-live datamaps to get tao_cmds, a list of commands to update the Bmad model
 tao_cmds = mod.get_tao(pvdata, bm)
