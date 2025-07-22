@@ -9,7 +9,7 @@ z_positions = tao.lat_list("*", "ele.z")
 x_orbit = tao.lat_list("*", "ele.x")
 
 import matplotlib.pyplot as plt
-plt.plot(z_positions, x_orbit, linestyle="X Orbit")
+plt.plot(z_positions, x_orbit, label="X Orbit")
 plt.xlabel("Z [m]")
 plt.ylabel("X [mm]")
 plt.title("X vs. Z orbit")
