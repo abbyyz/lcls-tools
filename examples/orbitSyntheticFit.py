@@ -1,12 +1,64 @@
 from pytao import Tao
+from lcls_tools.common.data.bmad_modeling import bmad_modeling as mod
+from lcls_tools.common.data.bmad_modeling.outputs import (
+    bmad_modeling_outputs as outfn,
+)
+OPTIONS = -"slice BEGINNING:ENDL3B -noplot "
+INIT = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}"
 
 section = "BEGL3B:ENDL3B"
 init_cmd = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init -slice {section} -noplot"
-tao = Tao(init_cmd)
+
+# Set element values for this section   
+element_settings = {
+    'ACCL:L3B:2680:ADES': 0.0,
+    'ACCL:L3B:1670:ADES': 18.68,
+    'ACCL:L3B:1950:PDES': 0.0,
+    'QUAD:L3B:1885:BDES': -3.7177067,
+    'ACCL:L3B:2970:PDES': -18.59487075086617,
+    'ACCL:L3B:3120:ADES': 16.6,
+    'ACCL:L3B:3210:PDES': 24.17171409887307,
+    'ACCL:L3B:1740:ADES': 16.0,
+    'ACCL:L3B:1880:ADES': 16.59,
+    'ACCL:L3B:2240:ADES': 18.68,
+    'ACCL:L3B:2130:ADES': 16.59,
+    'ACCL:L3B:3140:ADES': 16.6,
+    'ACCL:L3B:2620:ADES': 18.68,
+    'ACCL:L3B:2340:ADES': 16.59,
+    'ACCL:L3B:2320:ADES': 16.59,
+    'ACCL:L3B:2530:ADES': 14.59,
+    'ACCL:L3B:1810:ADES': 15.99,
+    'ACCL:L3B:1820:ADES': 12.5,
+    'ACCL:L3B:3260:ADES': 16.6,
+    'ACCL:L3B:3080:ADES': 16.6,
+    'ACCL:L3B:2930:ADES': 18.68,
+    'ACCL:L3B:2740:ADES': 16.6,
+    'ACCL:L3B:1630:ADES': 16.2,
+    'ACCL:L3B:2920:ADES': 12.09,
+    # Add more as needed for your section
+}
+
+# Apply settings in Tao
+for ele, val in element_settings.items():
+    if val is not None:
+        if ":ADES" in ele or ":PDES" in ele:
+            tao.cmd(f"set ele {ele} DESIGN_ENERGY = {val}")
+        elif ":BDES" in ele:
+            tao.cmd(f"set ele {ele} BDES = {val}")
+        # Add more attribute mappings if needed
+tao = Tao(INIT)
+tao.cmd("set ele BEGINNING:ENDCOL0 field_master=True")
+def tc(cmd):
+    [print(line) for line in tao.cmd(cmd)]
 
 elements = tao.lat_list("*", "ele.name")
 z_positions = tao.lat_list("*", "ele.z")
 x_orbit = tao.lat_list("*", "ele.x")
+
+print("z_positions:", z_positions)
+print("x_orbit:", x_orbit)
+print("Length z_positions:", len(z_positions))
+print("Length x_orbit:", len(x_orbit))
 
 import matplotlib.pyplot as plt
 plt.plot(z_positions, x_orbit, label="X Orbit")
@@ -82,3 +134,7 @@ plt.ylabel("Δ Orbit [mm]")
 plt.title("Difference Orbits After Quad Rotation")
 plt.legend()
 plt.show()
+
+import numpy as np
+print("Any NaNs in x_orbit?", np.any(np.isnan(x_orbit)))
+print("Any NaNs in z_positions?", np.any(np.isnan(z_positions)))
