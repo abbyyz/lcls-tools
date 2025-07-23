@@ -9,36 +9,21 @@ INIT = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}"
 section = "BEGL3B:ENDL3B"
 init_cmd = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init -slice {section} -noplot"
 
-# Set element values for this section   
-element_settings = {
-    'ACCL:L3B:2680:ADES': 0.0,
-    'ACCL:L3B:1670:ADES': 18.68,
-    'ACCL:L3B:1950:PDES': 0.0,
-    'QUAD:L3B:1885:BDES': -3.7177067,
-    'ACCL:L3B:2970:PDES': -18.59487075086617,
-    'ACCL:L3B:3120:ADES': 16.6,
-    'ACCL:L3B:3210:PDES': 24.17171409887307,
-    'ACCL:L3B:1740:ADES': 16.0,
-    'ACCL:L3B:1880:ADES': 16.59,
-    'ACCL:L3B:2240:ADES': 18.68,
-    'ACCL:L3B:2130:ADES': 16.59,
-    'ACCL:L3B:3140:ADES': 16.6,
-    'ACCL:L3B:2620:ADES': 18.68,
-    'ACCL:L3B:2340:ADES': 16.59,
-    'ACCL:L3B:2320:ADES': 16.59,
-    'ACCL:L3B:2530:ADES': 14.59,
-    'ACCL:L3B:1810:ADES': 15.99,
-    'ACCL:L3B:1820:ADES': 12.5,
-    'ACCL:L3B:3260:ADES': 16.6,
-    'ACCL:L3B:3080:ADES': 16.6,
-    'ACCL:L3B:2930:ADES': 18.68,
-    'ACCL:L3B:2740:ADES': 16.6,
-    'ACCL:L3B:1630:ADES': 16.2,
-    'ACCL:L3B:2920:ADES': 12.09,
-    # Add more as needed for your section
-}
+tao = Tao(INIT)  # Create Tao instance first
+def tc(cmd):
+    [print(line) for line in tao.cmd(cmd)]
 
 # Apply settings in Tao
+element_settings = {
+    "XC01B": 0.01,         # Horizontal kicker near start
+    "CQ01B": 1.2,          # Example quadrupole gradient
+    "BUN1B": 0.0,          # Example cavity setting
+    "XC02B": 0.0,          # Another kicker
+    "CQ02B": 1.0,          # Another quadrupole
+    # Add more elements as needed, using names from your lattice
+    # "element_name": value,
+}
+
 for ele, val in element_settings.items():
     if val is not None:
         if ":ADES" in ele or ":PDES" in ele:
@@ -46,10 +31,7 @@ for ele, val in element_settings.items():
         elif ":BDES" in ele:
             tao.cmd(f"set ele {ele} BDES = {val}")
         # Add more attribute mappings if needed
-tao = Tao(INIT)
 tao.cmd("set ele BEGINNING:ENDCOL0 field_master=True")
-def tc(cmd):
-    [print(line) for line in tao.cmd(cmd)]
 
 elements = tao.lat_list("*", "ele.name")
 z_positions = tao.lat_list("*", "ele.z")
