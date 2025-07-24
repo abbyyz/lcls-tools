@@ -8,7 +8,7 @@ OPTIONS = '-slice BEGL3B:ENDL3B '
 
 INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
 tao = Tao(INIT)
-tao.cmd('set ele BEGINNING:END field_master=True')
+tao.cmd('set ele BEGL3B:ENDL3B field_master=True')
 
 def tc(cmd):
     [print(l) for l in tao.cmd(cmd)]
