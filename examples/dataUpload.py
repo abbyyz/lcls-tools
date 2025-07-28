@@ -1,3 +1,4 @@
+import h5py
 import numpy as np
 from scipy.io import loadmat
 from pytao import Tao
@@ -5,15 +6,11 @@ from lcls_tools.common.data.bmad_modeling import bmad_modeling as mod
 
 # Step 1: Load the MATLAB Data
 file_path = '/mccfs2/u1/lcls/matlab/data/2025/2025-07/2025-07-08/OnlineMonitor-orbitSearchSynch-BSA-2025-07-08--16-59-05-765.mat'
-data = loadmat(file_path)
+f = h5py.File(file_path, 'r')
 
-# Extract the relevant MATA data
-scalars = data['Data']['Scalars'][0, 0]  # Access the Scalars field
-num_pulses = scalars.shape[0]
-
-# Extract ScalarsList and decode to strings
-scalars_list = data['Data']['ScalarsList'][0, 0].flatten()
-scalars_list = [str(s[0]) if isinstance(s, np.ndarray) else str(s) for s in scalars_list]
+# Scalars: shape [num_devices, num_pulses] in HDF5, so you may need to transpose
+scalars = np.array(f['Data']['Scalars']).T  # Now [num_pulses, num_devices]
+scalars_list = [b''.join(f['Data']['ScalarsList'][i][0]).decode() for i in range(f['Data']['ScalarsList'].shape[0])]
 
 # Find indices for X and Y BPMs
 x_indices = [i for i, name in enumerate(scalars_list) if ':X' in name]
