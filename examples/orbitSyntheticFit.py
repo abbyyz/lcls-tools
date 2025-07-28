@@ -1,84 +1,51 @@
 from pytao import Tao
-
-section = "BEGL3B:ENDL3B"
-init_cmd = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init -slice {section} -noplot"
-tao = Tao(init_cmd)
-
-elements = tao.lat_list("*", "ele.name")
-z_positions = tao.lat_list("*", "ele.z")
-x_orbit = tao.lat_list("*", "ele.x")
-
+from lcls_tools.common.data.bmad_modeling import bmad_modeling as mod
+from lcls_tools.common.data.bmad_modeling.outputs import bmad_modeling_outputs as outfn
 import matplotlib.pyplot as plt
-plt.plot(z_positions, x_orbit, label="X Orbit")
-plt.xlabel("Z [m]")
-plt.ylabel("X [mm]")
-plt.title("X vs. Z orbit")
-plt.legend()
-plt.show()
+from pmd_beamphysics import ParticleGroup
+import numpy as np
+OPTIONS = '-slice BEGL3B:ENDL3B '
 
-corrector = "XCxxxx"  # Replace with actual corrector name near BEGL3B
-# Get current BDES
-bdes_orig = tao.ele_gen_attribs(corrector)["BL_GRADIENT"]
-# Change BDES
-tao.cmd(f"set ele {corrector} BL_GRADIENT = {bdes_orig + 0.01}")  # Small kick
-# Recalculate lattice
-tao.cmd("run")
-# Plot new orbit
-x_orbit_new = tao.lat_list("*", "orbit.x")
-plt.plot(z_positions, x_orbit_new, label="X Orbit (after kick)")
-plt.legend()
-plt.show()
+INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
+tao = Tao(INIT)
+tao.cmd('set ele BEGL3B:ENDL3B field_master=True')
 
-quad = "QUADxxxx"  # Replace with actual quad name after corrector
-# Change gradient
-quad_grad_orig = tao.ele_gen_attribs(quad)["B1_GRADIENT"]
-tao.cmd(f"set ele {quad} B1_GRADIENT = {quad_grad_orig * 1.05}")
-tao.cmd("run")
-x_orbit_quad = tao.lat_list("*", "orbit.x")
-plt.plot(z_positions, x_orbit_quad, label="X Orbit (quad changed)")
-plt.legend()
-plt.show()
+def tc(cmd):
+    [print(l) for l in tao.cmd(cmd)]
 
-# Change X_OFFSET
-tao.cmd(f"set ele {quad} X_OFFSET = 0.001")
-tao.cmd("run")
-x_orbit_offset = tao.lat_list("*", "orbit.x")
-plt.plot(z_positions, x_orbit_offset, label="X Orbit (quad X_OFFSET)")
-plt.legend()
-plt.show()
+    
+tc('set plot_page size = 480 270')
+tc('place top beta')
+tc('place floor orbit')
+tc('place middle eta ')
+tc('place bottom layout')
+tc('x_scale * 398 652') 
+tc('scale *')
 
-# Change X_PITCH
-tao.cmd(f"set ele {quad} X_PITCH = 0.001")
-tao.cmd("run")
-x_orbit_pitch = tao.lat_list("*", "orbit.x")
-plt.plot(z_positions, x_orbit_pitch, label="X Orbit (quad X_PITCH)")
-plt.legend()
-plt.show()
+tc('set ele XCM16 BL_KICK = 0.0005')
+tc('scale *')
 
-# Change corrector again
-tao.cmd(f"set ele {corrector} BL_GRADIENT = {bdes_orig + 0.02}")
-tao.cmd("run")
-x_orbit = tao.lat_list("*", "orbit.x")
-y_orbit = tao.lat_list("*", "orbit.y")
-plt.plot(z_positions, x_orbit, label="X Orbit")
-plt.plot(z_positions, y_orbit, label="Y Orbit")
-plt.legend()
-plt.show()
+# model -> data, remove kick and fit 
+tao.var_v1_create('kickFit',1,1)
+tao.var_create('kickFit[1]','XCM16', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F','F',0.01)
 
-# Rotate quad about z axis (theta in radians)
-tao.cmd(f"set ele {quad} TILT = 0.05")  # ~2.9 degrees
-tao.cmd("run")
-x_orbit_coupled = tao.lat_list("*", "orbit.x")
-y_orbit_coupled = tao.lat_list("*", "orbit.y")
-plt.plot(z_positions, x_orbit_coupled, label="X Orbit (coupled)")
-plt.plot(z_positions, y_orbit_coupled, label="Y Orbit (coupled)")
-plt.legend()
-plt.show()
+tc('set dat orbit.x|meas = orbit.x|model')
 
-plt.plot(z_positions, x_orbit_coupled - x_orbit, label="ΔX Orbit (coupling)")
-plt.plot(z_positions, y_orbit_coupled - y_orbit, label="ΔY Orbit (coupling)")
-plt.xlabel("Z [m]")
-plt.ylabel("Δ Orbit [mm]")
-plt.title("Difference Orbits After Quad Rotation")
-plt.legend()
-plt.show()
+tc('set ele XCM16 BL_KICK = 0.000')
+
+tc('show alias')
+tc('vv')
+tc('vd')
+tc('use var kickFit')
+tc('use data orbit.x')
+tc('show merit')
+
+#These above will use the optimizer (default settings) to find a kick at
+# the variable elements.  The kick will be the best fit of the model to the
+#orbit we previously generated.
+
+tc('run')
+
+#checkes that optimizer set the corrector XCM16 BL_KICK to the value
+#we set it manualy before to generate the data
+tc('show lat  XCM16 -attr BL_KICK')
