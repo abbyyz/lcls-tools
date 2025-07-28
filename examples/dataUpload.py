@@ -33,6 +33,26 @@ INIT = f"-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}"
 tao = Tao(INIT)
 tao.cmd("set ele BEGINNING:ENDCOL0 field_master=True")
 
+def tc(cmd):
+    [print(l) for l in tao.cmd(cmd)]
+
+# from pytao import Tao
+# from lcls_tools.common.data.bmad_modeling import bmad_modeling as mod
+# from lcls_tools.common.data.bmad_modeling.outputs import bmad_modeling_outputs as outfn
+# import matplotlib.pyplot as plt
+# from pmd_beamphysics import ParticleGroup
+# import numpy as np
+# OPTIONS = '-slice BEGL3B:ENDL3B '
+
+# INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
+# tao = Tao(INIT)
+# tao.cmd('set ele BEGL3B:ENDL3B field_master=True')
+
+# def tc(cmd):
+#     [print(l) for l in tao.cmd(cmd)]
+
+
+
 # Get BPM PV List 
 bm = mod.BmadModeling("sc_sxr", "DES")
 pv_list = bm.all_data_maps["bpms"].pvlist
