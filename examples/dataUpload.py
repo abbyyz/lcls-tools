@@ -25,10 +25,10 @@ for col in data.columns:
         continue  # Skip columns that don't match
 
     # Set each value using the correct index
-    for idx, value in enumerate(data[col]):
+    for idx, value in enumserate(data[col]):
         try:
-            tc(f"set data {param}[{idx+1}]|meas = {value}")
+            tc(f'set dat {param}[{idx+1}]|meas = {value}')
         except Exception as e:
-            print(f"Error setting {param}[{idx+1}]|meas: {e}")
+            print(f'Error setting {param}[{idx+1}]|meas: {e}')
 
 print("All measurements uploaded to Tao.")
