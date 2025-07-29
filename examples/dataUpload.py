@@ -15,25 +15,20 @@ def tc(cmd):
 
 # Iterate over columns (devices/parameters)
 for col in data.columns:
-    # Example: col = 'BPMS:HTR:460:X'
-    # Get the element name and parameter from the column name
     if col.endswith(':X'):
-        element_name = col[:-2]
-        param = 'orbit.x|meas'
+        param = 'orbit.x'
     elif col.endswith(':Y'):
-        element_name = col[:-2]
-        param = 'orbit.y|meas'
+        param = 'orbit.y'
     elif col.endswith(':TMIT'):
-        element_name = col[:-5]
-        param = 'tmit|meas'
+        param = 'tmit'
     else:
         continue  # Skip columns that don't match
 
-    # Set the value for each row (pulse/measurement)
+    # Set each value using the correct index
     for idx, value in enumerate(data[col]):
         try:
-            tc(f"set data {param} {element_name} = {value}")
+            tc(f"set data {param}[{idx+1}]|meas = {value}")
         except Exception as e:
-            print(f"Error setting {param} for {element_name}: {e}")
+            print(f"Error setting {param}[{idx+1}]|meas: {e}")
 
 print("All measurements uploaded to Tao.")
