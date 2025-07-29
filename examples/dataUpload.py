@@ -25,7 +25,7 @@ for col in data.columns:
         continue  # Skip columns that don't match
 
     # Set each value using the correct index
-    for idx, value in enumserate(data[col]):
+    for idx, value in enumerate(data[col]):
         try:
             tc(f'set dat {param}[{idx+1}]|meas = {value}')
         except Exception as e:
