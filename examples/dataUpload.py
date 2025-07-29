@@ -13,6 +13,9 @@ tao = Tao(INIT)
 def tc(cmd):
     [print(l) for l in tao.cmd(cmd)]
 
+# Get the number of valid orbit.x data points from Tao
+num_orbit_x = len(tao.data_d_array('orbit', 'x'))
+
 # Iterate over columns (devices/parameters)
 for col in data.columns:
     if col.endswith(':X'):
@@ -22,10 +25,12 @@ for col in data.columns:
     elif col.endswith(':TMIT'):
         param = 'tmit'
     else:
-        continue  # Skip columns that don't match
+        continue
 
     # Set each value using the correct index
     for idx, value in enumerate(data[col]):
+        if idx+1 > num_orbit_x:
+            continue  # Skip out-of-bounds indices
         try:
             tc(f'set dat {param}[{idx+1}]|meas = {value}')
         except Exception as e:
