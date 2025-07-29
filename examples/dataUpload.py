@@ -23,7 +23,7 @@ for col in data.columns:
     elif col.endswith(':Y'):
         param = 'orbit.y'
     elif col.endswith(':TMIT'):
-        param = 'tmit'
+        param = 'charge'
     else:
         continue
 
