@@ -6,6 +6,7 @@ csv_file_path = '/sdf/home/a/abbyz/bmad/measurementData.csv'
 data = pd.read_csv(csv_file_path)
 
 # Initialize the TAO environment or lattice (example)
+OPTIONS = "-slice BEGINNING:END -noplot "
 INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
 tao = Tao(INIT)
 
