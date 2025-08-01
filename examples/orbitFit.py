@@ -4,51 +4,37 @@ from lcls_tools.common.data.bmad_modeling.outputs import bmad_modeling_outputs a
 import matplotlib.pyplot as plt
 from pmd_beamphysics import ParticleGroup
 import numpy as np
-OPTIONS = '-slice BEGL3B:ENDL3B '
-INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
-#INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
 
+OPTIONS = ''
+INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
 tao = Tao(INIT)
-#tao.cmd('set ele BEGINNING:END field_master=True')
 
 def tc(cmd):
     [print(l) for l in tao.cmd(cmd)]
 
-    
+# Set up plotting (optional)
 tc('set plot_page size = 480 270')
 tc('place top beta')
 tc('place floor orbit')
 tc('place middle eta ')
 tc('place bottom layout')
-tc('x_scale * ') 
+tc('x_scale * ')
 tc('scale *')
 
-tc('set ele XCM16 BL_KICK = 0.0005')
-tc('scale *')
+# --- Step 1: Add both a corrector kick and a quad k value kick ---
+tc('set ele XCM16 BL_KICK = 0.0005')      # Corrector kick
+tc('set ele QCM18 B1_GRADIENT = 1.3')     # Quad k value kick
 
-# model -> data, remove kick and fit 
-tao.var_v1_create('kickFit2',1,2)
-tao.var_create('kickFit2[1]','XCM16', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F','F',0.01)
-tao.var_create('kickFit2[2]','QCM18', 'B1_GRADIENT', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F','F',0.01)
-
+# --- Step 2: Store this as the "measured" orbit ---
 tc('set dat orbit.x|meas = orbit.x|model')
 
-tc('set ele XCM16 BL_KICK = 0.000')
+# --- Step 3: Remove the corrector kick, leave only the quad kick in the model ---
+tc('set ele XCM16 BL_KICK = 0.000')       # Remove corrector kick
+# QCM18 B1_GRADIENT remains at 1.3
 
-def get_orbit():
-    orbit_data = {}
-    meas, model, design = {},{},{}
-    for plane in ['x','y']:
-        val = tao.data_d_array('orbit', plane)
-        meas[plane] = [item['meas_value'] for item in val]
-        model[plane] = [item['model_value'] for item in val]
-        design[plane] = [item['design_value'] for item in val]
-    orbit_data['meas'] = meas
-    orbit_data['model'] = model
-    orbit_data['design'] = design
-    orbit_data['element'] =  [item['ele_name'] for item in val]
-    return orbit_data
-
+# --- Step 4: Fit with only a quad kick variable ---
+tao.var_v1_create('kickFit', 1, 1)
+tao.var_create('kickFit[1]', 'QCM18', 'B1_GRADIENT', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F', 'F', 0.01)
 
 tc('show alias')
 tc('vv')
@@ -57,41 +43,49 @@ tc('use var kickFit')
 tc('use data orbit.x')
 tc('show merit')
 
-#These above will use the optimizer (default settings) to find a kick at
-# the variable elements.  The kick will be the best fit of the model to the
-#orbit we previously generated.
-
 tc('run')
 
-#checkes that optimizer set the corrector XCM16 BL_KICK to the value
-#we set it manualy before to generate the data
-tc('show lat  XCM16 -attr BL_KICK')
-
-#Now look at  quad kicks
-
-#1.5575E+00
+# --- Step 5: Check results ---
 tc('show lat QCM18 -attr B1_GRADIENT')
+tc('show lat XCM16 -attr BL_KICK')
 
+# --- Step 6: Compare meas and model orbits ---
+def get_orbit(tao):
+    orbit_data = {}
+    meas, model, design, useit = {},{},{},{}
+    for plane in ['x','y']:
+        val = tao.data_d_array('orbit', plane)
+        meas[plane] = [item['meas_value'] for item in val]
+        model[plane] = [item['model_value'] for item in val]
+        design[plane] = [item['design_value'] for item in val]
+        useit[plane] = [item['useit_opt'] for item in val]
+    orbit_data['meas'] = meas
+    orbit_data['model'] = model
+    orbit_data['design'] = design
+    orbit_data['element'] =  [item['ele_name'] for item in val]
+    orbit_data['s'] = [tao.ele_head(ele)['s'] for ele in orbit_data['element']]
+    orbit_data['ixd1'] = [item['ix_d1'] for item in val]
+    orbit_data['useit'] = useit
+    return orbit_data
 
-tc('set ele QCM18  B1_GRADIENT = 1.3')
+plt.style.use('ggplot')
 
+def plot_orbits(o1, type1, o2, type2):
+    indx = np.where(o1['useit']['x'])[0].astype(int)
+    _, ax = plt.subplots(1, 2, figsize=(12, 5))
+    ax[0].stem(o1['s'], o1[type1]['x'], linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' x orbit')
+    ax[0].plot(o2['s'], o2[type1]['x'])
+    ax[0].plot(o2['s'][indx[0]:indx[-1]], o2[type1]['x'][indx[0]:indx[-1]], color='#007B7F', label='fitted x region')
+    ax[0].set_ylabel('x orbit')
+    ax[0].set_xlabel('s [m]')
+    ax[0].legend()
+    ax[1].stem(o1['s'], o1[type1]['y'], linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' y orbit')
+    ax[1].plot(o2['s'], o2[type1]['y'])
+    ax[1].plot(o2['s'][indx[0]:indx[-1]], o2[type1]['y'][indx[0]:indx[-1]], color='#007B7F', label='fitted y region')
+    ax[1].set_ylabel('y orbit')
+    ax[1].set_xlabel('s [m]')
+    ax[1].legend()
+    plt.show(block=False)
 
-tc('set dat orbit.x|meas = orbit.x|model')
-tao.var_v1_create('kickFit2',1,2)
-tao.var_create('kickFit2[1]','XCM16', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F','F',0.01)
-tao.var_create('kickFit2[2]','QCM18', 'B1_GRADIENT', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F','F',0.01)
-tc('show alias')
-tc('vv')
-tc('vd')
-tc('use var kickFit2')
-tc('use data orbit.x')
-tc('show merit')
-
-
-tc('set ele XCM16 BL_KICK = 0.000') #back to desing
-tc('set ele QCM18  B1_GRADIENT = 1.5575E+00') #Back to design
-
-#Did the fit find 1.3 for quad and  0.0005 for corrector?
-tc('show lat QCM18 -attr B1_GRADIENT')
-tc('show lat  XCM16 -attr BL_KICK')
-
+o = get_orbit(tao)
+plot_orbits(o, 'meas', o, 'model')
