@@ -6,33 +6,33 @@ csv_file_path = '/sdf/home/a/abbyz/bmad/measurementData.csv'
 data = pd.read_csv(csv_file_path)
 
 # Initialize the TAO environment or lattice (example)
+OPTIONS = "-slice BEGINNING:END -noplot "
 INIT = f'-init $LCLS_LATTICE/bmad/models/sc_sxr/tao.init {OPTIONS}'
 tao = Tao(INIT)
 
 def tc(cmd):
     [print(l) for l in tao.cmd(cmd)]
 
+#Get the number of valid orbit.x data points from Tao
+num_orbit_x = len(tao.data_d_array('orbit', 'x'))
+
 # Iterate over columns (devices/parameters)
 for col in data.columns:
-    # Example: col = 'BPMS:HTR:460:X'
-    # Get the element name and parameter from the column name
     if col.endswith(':X'):
-        element_name = col[:-2]
-        param = 'orbit.x|meas'
+        param = 'orbit.x'
     elif col.endswith(':Y'):
-        element_name = col[:-2]
-        param = 'orbit.y|meas'
+        param = 'orbit.y'
     elif col.endswith(':TMIT'):
-        element_name = col[:-5]
-        param = 'tmit|meas'
+        param = 'charge'
     else:
-        continue  # Skip columns that don't match
+        continue
 
-    # Set the value for each row (pulse/measurement)
+    # Set each value using the correct index
     for idx, value in enumerate(data[col]):
+        if idx+1 > num_orbit_x:
+            continue  # Skip out-of-bounds indices
         try:
-            tc(f"set data {param} {element_name} = {value}")
+            tc(f'set dat {param}[{idx+1}]|meas = {value}')
         except Exception as e:
-            print(f"Error setting {param} for {element_name}: {e}")
-
+            print(f'Error setting {param}[{idx+1}]|meas: {e}')
 print("All measurements uploaded to Tao.")

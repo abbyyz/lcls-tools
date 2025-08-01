@@ -26,12 +26,12 @@ tc('set ele XCM16 BL_KICK = 0.0005')
 tc('scale *')
 
 # model -> data, remove kick and fit 
-tao.var_v1_create('kickFit', 1, 3)
-# tao.var_create('kickFit[1]', 'XCM16', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F', 'F', 0.01)
+tao.var_v1_create('kickFit', 1, 1)
+tao.var_create('kickFit[1]', 'XCM16', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F', 'F', 0.01)
 # tao.var_create('kickFit[2]', 'XCM17', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F', 'F', 0.01)
 # tao.var_create('kickFit[3]', 'XCM18', 'BL_KICK', 1, 0, 1E-4, -1E30, 1E30, 'limit', 'F', 'F', 0.01)
 
-tc('set dat orbit.x|meas = orbit.x|model')
+# tc('set dat orbit.x|meas = orbit.x|model')
 
 tc('set ele XCM16 BL_KICK = 0.000')
 
@@ -39,7 +39,8 @@ tc('show alias')
 tc('vv')
 tc('vd')
 tc('use var kickFit')
-tc('use data orbit.x')
+
+tc('use data orbit.x|meas')
 tc('show merit')
 
 #These above will use the optimizer (default settings) to find a kick at
