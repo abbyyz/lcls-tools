@@ -56,12 +56,12 @@ def plot_orbits(o1, type1, o2, type2):
     fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(12, 5))
     
     # X Orbit Plot
-    ax0.stem(o1['s'], np.array(o1[type1]['x']) * 1000, 
+    ax0.stem(o1['s'], np.array(o1[type]['x']) * 1000, 
              linefmt='#FF6F61', markerfmt='o', basefmt=" ", 
              label=f'{type1} x orbit')
-    ax0.plot(o2['s'], np.array(o2[type1]['x']) * 1000)
+    ax0.plot(o2['s'], np.array(o2[type2]['x']) * 1000)
     ax0.plot(o2['s'][indx[0]:indx[-1]], 
-             np.array(o2[type1]['x'])[indx[0]:indx[-1]] * 1000, 
+             np.array(o2[type2]['x'])[indx[0]:indx[-1]] * 1000, 
              color='#007B7F', label='fitted x region')
     ax0.set_ylabel('x orbit [mm]')
     ax0.set_xlabel('s [m]')
@@ -73,9 +73,9 @@ def plot_orbits(o1, type1, o2, type2):
     ax1.stem(o1['s'], np.array(o1[type1]['y']) * 1000, 
              linefmt='#FF6F61', markerfmt='o', basefmt=" ", 
              label=f'{type1} y orbit')
-    ax1.plot(o2['s'], np.array(o2[type1]['y']) * 1000)
+    ax1.plot(o2['s'], np.array(o2[type2]['y']) * 1000)
     ax1.plot(o2['s'][indx[0]:indx[-1]], 
-             np.array(o2[type1]['y'])[indx[0]:indx[-1]] * 1000, 
+             np.array(o2[type2]['y'])[indx[0]:indx[-1]] * 1000, 
              color='#007B7F', label='fitted y region')
     ax1.set_ylabel('y orbit [mm]')
     ax1.set_xlabel('s [m]')
