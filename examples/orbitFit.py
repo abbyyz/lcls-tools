@@ -56,7 +56,7 @@ def plot_orbits(o1, type1, o2, type2):
     fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(12, 5))
     
     # X Orbit Plot
-    ax0.stem(o1['s'], np.array(o1[type1]['x']) * 1000, 
+    ax0.stem(o1['s'], np.array(o1[type]['x']) * 1000, 
              linefmt='#FF6F61', markerfmt='o', basefmt=" ", 
              label=f'{type1} x orbit')
     ax0.plot(o2['s'], np.array(o2[type2]['x']) * 1000)
