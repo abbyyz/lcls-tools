@@ -30,103 +30,30 @@ def get_orbit(tao):
     orbit_data['useit'] = useit
     return orbit_data
 
-# def plot_orbits(o1, type1, o2, type2):
-#     plt.style.use('ggplot')
-#     indx = np.where(o1['useit']['x'])[0].astype(int)
-#     _, ax = plt.subplots(1, 2, figsize=(12, 5))
-#     # Multiply y values by 1000 for mm
-#     ax[0].stem(o1['s'], np.array(o1[type1]['x']) * 1000, linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' x orbit')
-#     ax[0].plot(o2['s'], np.array(o2[type1]['x']) * 1000)
-#     ax[0].plot(o2['s'][indx[0]:indx[-1]], np.array(o2[type1]['x'])[indx[0]:indx[-1]] * 1000, color='#007B7F', label='fitted x region')
-#     ax[0].set_ylabel('x orbit [mm]')
-#     ax[0].set_xlabel('s [m]')
-#     ax[0].legend()
-#     ax[1].stem(o1['s'], np.array(o1[type1]['y']) * 1000, linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' y orbit')
-#     ax[1].plot(o2['s'], np.array(o2[type1]['y']) * 1000)
-#     ax[1].plot(o2['s'][indx[0]:indx[-1]], np.array(o2[type1]['y'])[indx[0]:indx[-1]] * 1000, color='#007B7F', label='fitted y region')
-#     ax[1].set_ylabel('y orbit [mm]')
-#     ax[1].set_xlabel('s [m]')
-#     ax[1].legend()
-#     plt.show(block=False)
-
 def plot_orbits(o1, type1, o2, type2):
     plt.style.use('ggplot')
     indx = np.where(o1['useit']['x'])[0].astype(int)
+    _, ax = plt.subplots(1, 2, figsize=(12, 5))
     
-    fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(12, 5))
+    # Scale factor for model data
+    model_scale = 1e10 if type2 == 'model' else 1
     
-    # X Orbit Plot
-    ax0.stem(o1['s'], np.array(o1[type]['x']) * 1000, 
-             linefmt='#FF6F61', markerfmt='o', basefmt=" ", 
-             label=f'{type1} x orbit')
-    ax0.plot(o2['s'], np.array(o2[type2]['x']) * 1000)
-    ax0.plot(o2['s'][indx[0]:indx[-1]], 
-             np.array(o2[type2]['x'])[indx[0]:indx[-1]] * 1000, 
-             color='#007B7F', label='fitted x region')
-    ax0.set_ylabel('x orbit [mm]')
-    ax0.set_xlabel('s [m]')
-    ax0.legend()
-    ax0.set_xticks(o1['s'])  # Set x-ticks to positions
-    ax0.set_xticklabels(o1['element'], rotation=45, ha='right')  # Set labels
+    # Multiply y values by 1000 for mm
+    ax[0].stem(o1['s'], np.array(o1[type1]['x']) * 1000, linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' x orbit')
+    ax[0].plot(o2['s'], np.array(o2[type1]['x']) * 1000, label=type1 + ' x region')
+    ax[0].plot(o2['s'][indx[0]:indx[-1]], np.array(o2[type2]['x'])[indx[0]:indx[-1]] * 1000 * model_scale, color='#007B7F', label='fitted x region')
+    ax[0].set_ylabel('x orbit [mm]')
+    ax[0].set_xlabel('s [m]')
+    ax[0].legend()
     
-    # Y Orbit Plot
-    ax1.stem(o1['s'], np.array(o1[type1]['y']) * 1000, 
-             linefmt='#FF6F61', markerfmt='o', basefmt=" ", 
-             label=f'{type1} y orbit')
-    ax1.plot(o2['s'], np.array(o2[type2]['y']) * 1000)
-    ax1.plot(o2['s'][indx[0]:indx[-1]], 
-             np.array(o2[type2]['y'])[indx[0]:indx[-1]] * 1000, 
-             color='#007B7F', label='fitted y region')
-    ax1.set_ylabel('y orbit [mm]')
-    ax1.set_xlabel('s [m]')
-    ax1.legend()
-    
-    # Connect the click event, passing both axes
-    fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, o1, type1, ax0, ax1))
-    
-    plt.tight_layout()
+    ax[1].stem(o1['s'], np.array(o1[type1]['y']) * 1000, linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' y orbit')
+    ax[1].plot(o2['s'], np.array(o2[type1]['y']) * 1000, label=type1 + ' y region')
+    ax[1].plot(o2['s'][indx[0]:indx[-1]], np.array(o2[type2]['y'])[indx[0]:indx[-1]] * 1000 * model_scale, color='#007B7F', label='fitted y region')
+    ax[1].set_ylabel('y orbit [mm]')
+    ax[1].set_xlabel('s [m]')
+    ax[1].legend()
     plt.show(block=False)
-
-def on_click(event, o1, type1, ax0, ax1):
-    if event.inaxes:  # Check if click is in any of the axes
-        x_data = o1['s']  # Get x values
-        closest_index = (np.abs(x_data - event.xdata)).argmin()  # Find closest index
-        
-        # Ensure that we do not go out of bounds for element array
-        if closest_index < len(o1['element']):
-            # Retrieve x and y values for the selected index
-            x_value = o1[type1]['x'][closest_index] * 1000  # Convert x orbit to mm
-            y_value = o1[type1]['y'][closest_index] * 1000  # Convert y orbit to mm
-            element_name = o1['element'][closest_index]
-            
-            # Create the information string for the annotation
-            element_info = f'Element: {element_name}\n' \
-                           f'x: {x_value:.3f} mm\n' \
-                           f'y: {y_value:.3f} mm'
-
-            # Optional: Print the information to the console (for debugging)
-            print(element_info)
-
-            # Determine which axes were clicked to place annotations correctly
-            if event.inaxes == ax0:  # Clicked on x orbit
-                event.inaxes.annotate(element_info,
-                                       (x_data[closest_index], x_value), 
-                                       textcoords="offset points", 
-                                       xytext=(0,10), 
-                                       ha='center', 
-                                       fontsize=10, 
-                                       color='red',
-                                       bbox=dict(boxstyle="round,pad=0.3", edgecolor='none', facecolor='white'))
-            elif event.inaxes == ax1:  # Clicked on y orbit
-                event.inaxes.annotate(element_info,
-                                       (x_data[closest_index], y_value),
-                                       textcoords="offset points", 
-                                       xytext=(0,10), 
-                                       ha='center', 
-                                       fontsize=10, 
-                                       color='blue',  # Optionally different color
-                                       bbox=dict(boxstyle="round,pad=0.3", edgecolor='none', facecolor='white'))
-                
+               
 
 #=================================================================================
 
