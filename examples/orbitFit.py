@@ -36,7 +36,7 @@ def plot_orbits(o1, type1, o2, type2):
     _, ax = plt.subplots(1, 2, figsize=(12, 5))
     
     # Scale factor for model data
-    model_scale = 1e10 if type2 == 'model' else 1
+    # model_scale = 1e10 if type2 == 'model' else 1
     
     # Multiply y values by 1000 for mm
     ax[0].stem(o1['s'], np.array(o1[type1]['x']) * 1000, linefmt='#FF6F61', markerfmt='o', basefmt=" ", label=type1 + ' x orbit')
@@ -67,7 +67,7 @@ tc('x_scale * ')
 tc('scale *')
 
 # --- Step 1: Add both a corrector kick and a quad k value kick ---
-tc('set ele XCM16 BL_KICK = 0.0005')      # X Corrector kick
+tc('set ele XCM16 BL_KICK = 0.05')      # X Corrector kick
 # tc('set ele YCM22 BL_KICK = 0.0005')     # Y Corrector kick
 tc('set ele QCM18 B1_GRADIENT = 1.3')     # Quad k value kick
 # tc('set ele CAVL258 GRADIENT = 9000000')  # Cavity kick (optional)
