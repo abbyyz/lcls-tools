@@ -236,6 +236,7 @@ tc('use var quady_offset[11:25]')
 #tc('use var quad_tilt[11:25]')
 tc('use var quad[11:25]')
 tc('use var  blrdg0')
+tc('use var  bxdg0') #ADDED NEW
 tc('use var  tcxdg0')
 tc('use var xcor[11:18]')
 tc('use var ycor[11:18]')
